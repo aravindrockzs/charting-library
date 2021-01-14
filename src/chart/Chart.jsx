@@ -4,7 +4,7 @@ import React, { Component } from 'react'
 import './chart.css'
 
 //helper function
-import{drawGrid} from '../helper'
+import{ drawGrid } from '../helper.js'
 
 
 
