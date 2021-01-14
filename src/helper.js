@@ -1,109 +1,141 @@
+function drawGrid(data, { width, height }, ctx, canvas) {
 
-
-
-function drawGrid({ width, height }, ctx) {
-
+    let max = Math.max(...data) + 300;
+    let min = Math.min(...data) - 300;
+    let diff = max - min;
     //horizontal and vertical number of lines
-    var vLine = 20;
-    var hLine = 10;
+    let vLine = 20;
+    let hLine = 10;
 
     //grid factor for lines
-    var gridX = width / vLine;
-    var gridY = height / hLine;
+    let gridX = width / vLine;
+    let gridY = height / hLine;
 
-    const factorX = gridX;
-    const factorY = gridY;
+    let spaceX = gridX;
+    let spaceY = gridY;
 
-
-
-
-
-    for (let i = 1; i < vLine; i++) {
-        drawLine({ x1: gridX, y1: 0, x2: gridX, y2: height }, ctx)
-        gridX += factorX
+    for (let i = 1; i < vLine + 2; i++) {
+        drawLine({ x1: gridX, y1: 0, x2: gridX, y2: height }, ctx);
+        gridX += spaceX;
     }
-
-
-
     for (let i = 1; i < hLine; i++) {
-        drawLine({ x1: 0, y1: gridY, x2: width, y2: gridY }, ctx)
-        gridY += factorY
+        drawLine({ x1: 0, y1: gridY, x2: width, y2: gridY }, ctx);
+        gridY += spaceY;
     }
+    let result = { max, min, diff, width, height, spaceX, spaceY };
+
+    drawGraph(data, result, ctx);
+
+    let snapshot;
+    snapshot = takeSnap(canvas, ctx, snapshot)
 
 
+    //mouse events
+
+    canvas.addEventListener('mousemove', (e) => {
+
+
+
+        let ctx = canvas.getContext('2d')
+        var { x, y } = getMousePos(canvas, e);
+
+
+        restoreSnap(ctx, snapshot)
+
+        let path1 = new Path2D();
+        path1.moveTo(x, y)
+        path1.lineTo(width, y)
+        let path2 = new Path2D(path1);
+        path2.moveTo(x, y)
+        path2.lineTo(x, 0)
+        let path3 = new Path2D(path2)
+        path3.moveTo(x, y);
+        path3.lineTo(x, height)
+        let path4 = new Path2D(path3)
+        path4.moveTo(x, y);
+        path4.lineTo(0, y)
+        ctx.lineWidth = 0.8
+
+        ctx.setLineDash([5]);
+        ctx.stroke(path4)
+
+
+
+    })
 
 
 }
-
 
 function drawLine({ x1, y1, x2, y2 }, ctx) {
-
-    ctx.beginPath()
-    ctx.moveTo(x1, y1)
-    ctx.lineTo(x2, y2)
-    ctx.lineWidth = 2
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineWidth = 2;
     ctx.strokeStyle = "#2B2B2B";
-    ctx.stroke()
-
-
+    ctx.stroke();
 }
-function drawGraph(data, ctx) {
 
 
-    const myData = [100, 400, 350, 200, 350, 280, 490]
+function drawGraph(data, calculated, ctx) {
+    const { max, min, diff, width, height, spaceX, spaceY } = calculated;
+    console.log(max, min, diff, width, height, spaceX, spaceY);
 
-    // const length = data.length
-    // const factorX = 45;
-    // let x = 0
-    // const max = 8000;
-    // const min = 3200;
-    // const divider = max + min / 2
+    //gives the canvas point
+    let actualP = (point) => {
+        return ((point - min) / diff) * height;
+    };
 
-    ctx.beginPath()
-    ctx.moveTo(0, 200)
-    let p1 = 45
+    let length = data.length;
+    let startY = data[length - 1];
 
-    for (let i = 0; i < 8; i++) {
-        ctx.lineTo(p1, myData[i])
-        ctx.lineWidth = 2
+    console.log(length, startY);
+
+    let pX = 0;
+
+    ctx.beginPath();
+    ctx.moveTo(pX, 500 - actualP(startY));
+    pX += spaceX;
+
+    console.log("spliced", data.splice(length - 1, 1));
+
+    data.reverse().map((value) => {
+        console.log("Values", value);
+        console.log(actualP(value));
+        ctx.lineTo(pX, 500 - actualP(value));
         ctx.strokeStyle = "#FFFFFF";
-        ctx.stroke()
-        p1 += 45
-
-    }
-
-
-
-
-
-    // if (!length > 0) {
-
-    //     ctx.beginPath()
-    //     const startP = data[length - 1];
-    //     ctx.moveTo(0, startP / divider)
-
-    //     data = data.splice(length - 1, 1)
-
-    //     data.reverse().array.forEach((value) => {
-    //         ctx.lineTo(x, value / divider)
-    //         ctx.lineWidth = 2
-    //         ctx.strokeStyle = "#2B2B2B";
-    //         ctx.stroke()
-    //         x += factorX
-
-
-    //     })
-
-
-
-    // }
-
-
+        ctx.stroke();
+        pX += spaceX;
+        return null;
+    });
 }
+
+//snapshots
+
+function takeSnap(canvas, ctx, snapshot) {
+
+    return snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height)
+}
+
+function restoreSnap(ctx, snapshot) {
+
+    ctx.putImageData(snapshot, 0, 0)
+}
+
+// mouse events
+
+function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+}
+
+
+//Crosshair
 
 
 module.exports = {
-    drawGraph,
     drawGrid,
-    drawLine
-}
+    drawLine,
+};

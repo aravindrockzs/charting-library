@@ -4,7 +4,7 @@ import React, { Component } from 'react'
 import './chart.css'
 
 //helper function
-import{drawGrid,drawGraph} from '../helper'
+import{drawGrid} from '../helper'
 
 
 
@@ -34,9 +34,7 @@ class Chart extends Component {
 
         const ctx= canvas.getContext('2d')
 
-        drawGrid({width,height},ctx)
-        drawGraph(this.state.data,ctx)
-
+        drawGrid(this.state.data,{width,height},ctx,canvas)
         this.setState({
             grid:true
         })
@@ -53,7 +51,7 @@ class Chart extends Component {
                 height:`${this.canvasRef.current.clientHeight}px`,
             },
             context:this.contextRef.current,
-            data:[5000,3200,6050,4900,7000,5650,8000]
+            data:[3200,9200,6050,4900,7000,5650,8000]
         }),()=>{
             this.renderGrid(this.state.context ,this.state.canvasStyle)
     
