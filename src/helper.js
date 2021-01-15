@@ -33,32 +33,12 @@ function drawGrid(data, { width, height }, ctx, canvas) {
     //mouse events
 
     canvas.addEventListener('mousemove', (e) => {
-
-
-
         let ctx = canvas.getContext('2d')
         var { x, y } = getMousePos(canvas, e);
 
 
         restoreSnap(ctx, snapshot)
-
-        let path1 = new Path2D();
-        path1.moveTo(x, y)
-        path1.lineTo(width, y)
-        let path2 = new Path2D(path1);
-        path2.moveTo(x, y)
-        path2.lineTo(x, 0)
-        let path3 = new Path2D(path2)
-        path3.moveTo(x, y);
-        path3.lineTo(x, height)
-        let path4 = new Path2D(path3)
-        path4.moveTo(x, y);
-        path4.lineTo(0, y)
-        ctx.lineWidth = 0.8
-
-        ctx.setLineDash([5]);
-        ctx.stroke(path4)
-
+        drawCrosshair(ctx, x, y, width, height)
 
 
     })
@@ -133,6 +113,22 @@ function getMousePos(canvas, evt) {
 
 
 //Crosshair
+
+function drawCrosshair(ctx, x, y, width, height) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(width, y);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, 0);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, height);
+    ctx.moveTo(x, y);
+    ctx.lineTo(0, y)
+    ctx.lineWidth = 0.8;
+    ctx.setLineDash([5]);
+    ctx.stroke()
+
+}
 
 
 module.exports = {
