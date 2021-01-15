@@ -1,4 +1,7 @@
 function drawGrid(data, { width, height }, ctx, canvas) {
+    let checkSnap = true;
+
+    let pointsArray = [];
 
     let max = Math.max(...data) + 300;
     let min = Math.min(...data) - 300;
@@ -24,26 +27,48 @@ function drawGrid(data, { width, height }, ctx, canvas) {
     }
     let result = { max, min, diff, width, height, spaceX, spaceY };
 
-    drawGraph(data, result, ctx);
+    drawGraph(data, result, ctx, pointsArray);
 
     let snapshot;
-    snapshot = takeSnap(canvas, ctx, snapshot)
-
 
     //mouse events
 
     canvas.addEventListener('mousemove', (e) => {
         let ctx = canvas.getContext('2d')
+
+
+
         var { x, y } = getMousePos(canvas, e);
 
 
         restoreSnap(ctx, snapshot)
         drawCrosshair(ctx, x, y, width, height)
 
+        if (checkSnap) {
+            pointsArray.map((value) => {
+                if (value.x >= x - 15 && value.x <= x + 15 && value.y >= y - 15 && value.y <= y + 15) {
+                    ctx.beginPath();
+                    ctx.setLineDash([]);
+                    ctx.lineWidth = 1.6;
+                    ctx.fillStyle = "white";
+                    ctx.moveTo(value.x, value.y);
+                    ctx.arc(value.x, value.y, 5, 0, 2 * Math.PI);
+                    ctx.stroke();
+
+                }
+
+                return null;
+            })
+
+        }
+
+
 
     })
 
 
+
+    snapshot = takeSnap(canvas, ctx, snapshot)
 }
 
 function drawLine({ x1, y1, x2, y2 }, ctx) {
@@ -53,10 +78,11 @@ function drawLine({ x1, y1, x2, y2 }, ctx) {
     ctx.lineWidth = 2;
     ctx.strokeStyle = "#2B2B2B";
     ctx.stroke();
+
 }
 
 
-function drawGraph(data, calculated, ctx) {
+function drawGraph(data, calculated, ctx, pointsArray) {
     const { max, min, diff, width, height, spaceX, spaceY } = calculated;
     console.log(max, min, diff, width, height, spaceX, spaceY);
 
@@ -67,8 +93,6 @@ function drawGraph(data, calculated, ctx) {
 
     let length = data.length;
     let startY = data[length - 1];
-
-    console.log(length, startY);
 
     let pX = 0;
 
@@ -82,11 +106,13 @@ function drawGraph(data, calculated, ctx) {
         console.log("Values", value);
         console.log(actualP(value));
         ctx.lineTo(pX, 500 - actualP(value));
+        pointsArray.push({ x: pX, y: 500 - actualP(value) })
         ctx.strokeStyle = "#FFFFFF";
         ctx.stroke();
         pX += spaceX;
         return null;
     });
+
 }
 
 //snapshots
@@ -126,7 +152,7 @@ function drawCrosshair(ctx, x, y, width, height) {
     ctx.lineTo(0, y)
     ctx.lineWidth = 0.8;
     ctx.setLineDash([5]);
-    ctx.stroke()
+    ctx.stroke();
 
 }
 
