@@ -1,7 +1,7 @@
 {
   "name": "chart-app",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "homepage": "https://aravindrockzs.github.io/chart-app",
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.8",
