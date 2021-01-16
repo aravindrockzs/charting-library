@@ -3,8 +3,8 @@ function drawGrid(data, { width, height }, ctx, canvas) {
 
     let pointsArray = [];
 
-    let max = Math.max(...data) + 300;
-    let min = Math.min(...data) - 300;
+    let max = Math.max(...data) + 30;
+    let min = Math.min(...data) - 30;
     let diff = max - min;
     //horizontal and vertical number of lines
     let vLine = 20;
@@ -47,14 +47,15 @@ function drawGrid(data, { width, height }, ctx, canvas) {
         if (checkSnap) {
             pointsArray.map((value) => {
                 if (value.x >= x - 15 && value.x <= x + 15 && value.y >= y - 15 && value.y <= y + 15) {
+
+                    restoreSnap(ctx, snapshot)
                     ctx.beginPath();
                     ctx.setLineDash([]);
                     ctx.lineWidth = 1.6;
-                    ctx.fillStyle = "white";
-                    ctx.moveTo(value.x, value.y);
+                    ctx.fillStyle = "#FF0000";
                     ctx.arc(value.x, value.y, 5, 0, 2 * Math.PI);
+                    ctx.fill();
                     ctx.stroke();
-
                 }
 
                 return null;
@@ -97,6 +98,7 @@ function drawGraph(data, calculated, ctx, pointsArray) {
     let pX = 0;
 
     ctx.beginPath();
+
     ctx.moveTo(pX, 500 - actualP(startY));
     pX += spaceX;
 
@@ -106,6 +108,8 @@ function drawGraph(data, calculated, ctx, pointsArray) {
         console.log("Values", value);
         console.log(actualP(value));
         ctx.lineTo(pX, 500 - actualP(value));
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 2;
         pointsArray.push({ x: pX, y: 500 - actualP(value) })
         ctx.strokeStyle = "#FFFFFF";
         ctx.stroke();

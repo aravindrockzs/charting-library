@@ -18,12 +18,22 @@ class Chart extends Component {
         },
         context:'',
         data:[],
-        grid: false
+        grid: false,
+        chart:'line'
         
     }
 
     canvasRef = React.createRef()
     contextRef = React.createRef()
+
+    selectChart=(e)=>{
+        console.log(e.target.value);
+
+        this.setState({
+            chart:e.target.value
+        })
+    }
+    
 
 
     renderGrid=(canvas)=>{
@@ -43,7 +53,7 @@ class Chart extends Component {
     }
 
 
-    componentDidMount(){
+    componentDidMount= async()=>{
         this.setState((prevState)=>({
             canvasStyle:{
                 ...prevState.canvasStyle,
@@ -51,22 +61,40 @@ class Chart extends Component {
                 height:`${this.canvasRef.current.clientHeight}px`,
             },
             context:this.contextRef.current,
-            data:[3200,9200,6050,4900,7000,5650,8000]
-        }),()=>{
+        }))
+
+        await fetch("http://api.marketstack.com/v1/eod?access_key=62378be415be5b8e1410d7534fef6593&symbols=AAPL")
+        .then(response=>response.json()).then(data1=> {
+            let result = data1.data;
+            result.length = 10;
+            let sample = result.map((value)=>{
+                return value['close'];
+            })
+            this.setState({
+                data: sample
+            },()=>{
+
             this.renderGrid(this.state.context ,this.state.canvasStyle)
-    
+            })
         })
-        
     }
 
     
     render() {
         return (
+            <>
+            <div  className="chart-type">
+                <input onClick={this.selectChart}  type="radio" id="chart1" name="chart" value="line"/>
+                <label for="chart"> Line Chart</label>
+                <input onClick={this.selectChart}  type="radio" id="chart2" name="chart" value="candlestick"/>
+                <label for="chart"> Candlestick</label>
+            </div>
             <div  ref={this.canvasRef} id="canvas-main">
                 <div id="canvas-child">
                     <canvas ref={this.contextRef} style={this.state.canvasStyle}> </canvas>
                 </div>
             </div>
+            </>
         )
     }
 }
