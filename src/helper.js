@@ -13,7 +13,7 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
         min = Math.min(...data) - 30;
     }
 
-    else if (type === 'candlestick') {
+    else if (type === 'candlestick' || 'barchart' || 'heikenashi') {
         let high = data.map(value => value.high);
         let low = data.map(value => value.low);
         max = Math.max(...high) + 30;
@@ -48,9 +48,19 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
         drawGraphLine(data, result, ctx, pointsArray);
     }
 
-    if (type === 'candlestick') {
+    else if (type === 'candlestick') {
         drawGraphCandle(data, result, ctx, pointsArray);
     }
+
+    else if (type === 'barchart') {
+        drawGraphBar(data, result, ctx, pointsArray);
+    }
+
+    else if (type === 'heikenashi') {
+        drawGraphHeikenAshi(data, result, ctx, pointsArray);
+    }
+
+
 
 
     let snapshot;
@@ -71,7 +81,7 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
         restoreSnap(ctx, snapshot)
         drawCrosshair(ctx, x, y, width, height)
 
-        if (checkSnap) {
+        if (checkSnap && type === 'line') {
             pointsArray.map((value) => {
                 if (value.x >= x - 12 && value.x <= x + 12 && value.y >= y - 12 && value.y <= y + 12) {
 
@@ -80,13 +90,38 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
                     ctx.setLineDash([]);
                     ctx.lineWidth = 1.6;
                     ctx.fillStyle = "#FF0000";
-                    ctx.arc(value.x, value.y, 5, 0, 2 * Math.PI);
+                    ctx.arc(value.x, value.y, 4, 0, 2 * Math.PI);
                     ctx.fill();
                     ctx.stroke();
                 }
                 return null;
             })
         }
+
+        // else if (checkSnap && type === 'candlestick') {
+        //     pointsArray.map((value) => {
+        //         if (Math.round(x) === value.x) {
+        //             console.log(value);
+        //             //S is snap
+        //             let yS = Math.round(value.y1) || Math.round(value.y2) || Math.round(value.y3) || Math.round(value.y4) === Math.round(y)
+
+        //             if (y === yS) {
+
+        //                 console.log("inside", yS, y);
+        //                 restoreSnap(ctx, snapshot)
+        //                 ctx.beginPath();
+        //                 ctx.setLineDash([]);
+        //                 ctx.lineWidth = 1.6;
+        //                 ctx.fillStyle = "#FF0000";
+        //                 ctx.arc(value.x, y, 5, 0, 2 * Math.PI);
+        //                 ctx.fill();
+        //                 ctx.stroke();
+        //             }
+
+        //         }
+        //         return null;
+        //     })
+        // }
     })
 
     snapshot = takeSnap(canvas, ctx, snapshot)
@@ -107,9 +142,7 @@ function drawLine({ x1, y1, x2, y2 }, ctx) {
 // for candlestick chart
 function drawGraphCandle(data, calculated, ctx, pointsArray) {
     const { min, diff, height, spaceX } = calculated;
-    // console.log(max, min, diff, width, height, spaceX, spaceY);
 
-    //gives the canvas point
     let actualP = (point) => {
         return ((point - min) / diff) * height;
     };
@@ -149,8 +182,159 @@ function drawGraphCandle(data, calculated, ctx, pointsArray) {
             ctx.fillRect(pX - 5, 500 - actualP(open), 10, actualP(open) - actualP(close))
         }
 
+        pointsArray.push({ x: pX, y1: 500 - actualP(high), y2: 500 - actualP(low), y3: 500 - actualP(open), y4: 500 - actualP(close) })
+
         ctx.stroke();
         pX += spaceX;
+        return null;
+    })
+
+
+}
+
+function drawGraphBar(data, calculated, ctx, pointsArray) {
+    const { min, diff, height, spaceX } = calculated;
+
+    let actualP = (point) => {
+        return ((point - min) / diff) * height;
+    };
+
+
+    let pX = 0;
+    let myData = [...data];
+
+    myData.reverse().map((value) => {
+        ctx.beginPath();
+        let { high, low, open, close } = value
+        ctx.moveTo(pX, 500 - actualP(high))
+        ctx.lineTo(pX, 500 - actualP(low))
+
+        if (close > open) {
+            ctx.strokeStyle = "#519C58"
+        }
+        else if (close < open) {
+            ctx.strokeStyle = "#E3415D"
+        }
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.beginPath()
+        //drawing left and right bars
+        if (close > open) {
+            ctx.strokeStyle = "#519C58"
+            ctx.moveTo(pX, 500 - actualP(close))
+            ctx.lineTo(pX + 8, 500 - actualP(close))
+            ctx.stroke()
+
+            ctx.moveTo(pX, 500 - actualP(open))
+            ctx.lineTo(pX - 8, 500 - actualP(open))
+            ctx.stroke()
+        }
+
+        else if (close < open) {
+            ctx.strokeStyle = "#E3415D"
+
+            ctx.moveTo(pX, 500 - actualP(open))
+            ctx.lineTo(pX - 8, 500 - actualP(open))
+            ctx.stroke()
+
+            ctx.moveTo(pX, 500 - actualP(close))
+            ctx.lineTo(pX + 8, 500 - actualP(close))
+            ctx.stroke()
+
+        }
+
+
+        pX += spaceX;
+        return null;
+    })
+
+
+}
+
+function drawGraphHeikenAshi(data, calculated, ctx, pointsArray) {
+
+
+    const { min, diff, height, spaceX } = calculated;
+
+    let actualP = (point) => {
+        return ((point - min) / diff) * height;
+    };
+
+
+    let pX = 0;
+    let myData = [...data];
+
+    //let p = previous bar
+    // let H = heikenashi bar
+
+    // formula
+    // Close= 1/4 (Open+Close+Low+Close)
+    // (The average price of the current bar)
+    // Open= 1/2(Open of Prev. Bar+Close of Prev. Bar)
+    // (The midpoint of the previous bar)
+    // High=Max[High, Open, Close]
+    // Low=Min[Low, Open, Close]
+
+    let firstcandle = true;
+    let openP, closeP, openH, closeH, highH, lowH;
+
+
+    myData.reverse().map((value) => {
+        ctx.beginPath();
+        let { high, low, open, close } = value
+
+        if (firstcandle) {
+            closeH = ((open + high + close + low) / 4)
+            openH = ((open + close) / 2)
+            ctx.moveTo(pX, 500 - actualP(high))
+            ctx.lineTo(pX, 500 - actualP(low))
+
+            console.log('first candle', closeH, openH);
+        }
+
+        else {
+            closeH = ((open + high + close + low) / 4)
+            openH = ((openP + closeP) / 2)
+            highH = Math.max(high, open, close)
+            lowH = Math.min(low, open, close)
+            ctx.moveTo(pX, 500 - actualP(highH))
+            ctx.lineTo(pX, 500 - actualP(lowH))
+
+        }
+
+        if (closeH > openH) {
+            ctx.strokeStyle = "#519C58"
+        }
+        else if (closeH < openH) {
+            ctx.strokeStyle = "#E3415D"
+        }
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // for drawing rectangles
+
+        ctx.beginPath();
+
+        if (closeH > openH) {
+            ctx.strokeStyle = "#519C58"
+            ctx.fillStyle = "#519C58"
+            ctx.fillRect(pX - 5, 500 - actualP(closeH), 10, actualP(closeH) - actualP(openH))
+        }
+
+        else if (closeH < openH) {
+            ctx.strokeStyle = "#E3415D"
+            ctx.fillStyle = "#E3415D"
+            ctx.fillRect(pX - 5, 500 - actualP(openH), 10, actualP(openH) - actualP(closeH))
+        }
+
+
+        openP = openH;
+        closeP = closeH;
+
+        ctx.stroke();
+        pX += spaceX;
+        firstcandle = false;
         return null;
     })
 

@@ -28,7 +28,7 @@ class Chart extends Component {
 
     selectChart= async (e)=>{
 
-         this.setState({
+        this.setState({
                 chartType:e.target.value
             })
         if(e.target.value==='line'){
@@ -49,7 +49,7 @@ class Chart extends Component {
 
         }
 
-        else if(e.target.value==='candlestick'){
+        else if(e.target.value==='candlestick' || 'barchart' || 'heikenashi'){
             this.setState({
                 chartType:e.target.value
             })
@@ -126,6 +126,10 @@ class Chart extends Component {
                 <label> Line Chart</label>
                 <input onClick={(e)=>this.selectChart(e)}  type="radio" id="chart2" name="chart" value="candlestick"/>
                 <label> Candlestick</label>
+                <input onClick={(e)=>this.selectChart(e)}  type="radio" id="chart3" name="chart" value="barchart"/>
+                <label> Bar</label>
+                <input onClick={(e)=>this.selectChart(e)}  type="radio" id="chart4" name="chart" value="heikenashi"/>
+                <label> Heiken Ashi</label>
             </div>
             <div  ref={this.canvasRef} id="canvas-main">
                 <div id="canvas-child">
