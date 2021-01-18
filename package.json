@@ -2,7 +2,6 @@
   "name": "chart-app",
   "version": "0.1.0",
   "private": false,
-  "homepage": "https://aravindrockzs.github.io/charting-library/",
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.8",
     "@testing-library/react": "^11.2.2",

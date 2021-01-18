@@ -19,19 +19,54 @@ class Chart extends Component {
         context:'',
         data:[],
         grid: false,
-        chart:'line'
+        chartType:'line'
         
     }
 
     canvasRef = React.createRef()
     contextRef = React.createRef()
 
-    selectChart=(e)=>{
-        console.log(e.target.value);
+    selectChart= async (e)=>{
 
-        this.setState({
-            chart:e.target.value
+         this.setState({
+                chartType:e.target.value
+            })
+        if(e.target.value==='line'){
+            await fetch("https://api.jsonbin.io/b/6004dadff98f6e35d5fdca2a")
+            .then(response=>response.json()).then(data=> {
+            let result = data;
+            result.length=10;
+            let sample = result.map((value)=>{
+                return value['close'];
+            })
+            this.setState({
+                data: sample
+            },()=>{
+
+            this.renderGrid(this.state.context ,this.state.canvasStyle)
+            })
+            })
+
+        }
+
+        else if(e.target.value==='candlestick'){
+            this.setState({
+                chartType:e.target.value
+            })
+
+            await fetch("https://api.jsonbin.io/b/6004dadff98f6e35d5fdca2a")
+            .then(response=>response.json()).then(data=> {
+            let result = data;
+            result.length=10;
+            this.setState({
+                data: result
+            },()=>{
+
+            this.renderGrid(this.state.context ,this.state.canvasStyle)
+            })
         })
+        }
+        
     }
     
 
@@ -44,12 +79,10 @@ class Chart extends Component {
 
         const ctx= canvas.getContext('2d')
 
-        drawGrid(this.state.data,{width,height},ctx,canvas)
+        drawGrid(this.state.data,{width,height},ctx,canvas,this.state.chartType)
         this.setState({
             grid:true
         })
-        
-        
     }
 
 
@@ -63,20 +96,25 @@ class Chart extends Component {
             context:this.contextRef.current,
         }))
 
-        await fetch("http://api.marketstack.com/v1/eod?access_key=62378be415be5b8e1410d7534fef6593&symbols=AAPL")
-        .then(response=>response.json()).then(data1=> {
-            let result = data1.data;
-            result.length = 10;
-            let sample = result.map((value)=>{
-                return value['close'];
-            })
-            this.setState({
-                data: sample
-            },()=>{
+        //https://api.jsonbin.io/b/6004dadff98f6e35d5fdca2a
 
-            this.renderGrid(this.state.context ,this.state.canvasStyle)
-            })
+        //http://api.marketstack.com/v1/eod?access_key=62378be415be5b8e1410d7534fef6593&symbols=AAPL
+
+        await fetch("https://api.jsonbin.io/b/6004dadff98f6e35d5fdca2a")
+        .then(response=>response.json())
+        .then(data=> {
+        let result = data;
+        result.length = 10;
+        let sample = result.map((value)=>{
+            return value['close'];
         })
+        this.setState({
+            data: sample
+        },()=>{
+
+        this.renderGrid(this.state.context ,this.state.canvasStyle)
+        })
+    })
     }
 
     
@@ -84,10 +122,10 @@ class Chart extends Component {
         return (
             <>
             <div  className="chart-type">
-                <input onClick={this.selectChart}  type="radio" id="chart1" name="chart" value="line"/>
-                <label for="chart"> Line Chart</label>
-                <input onClick={this.selectChart}  type="radio" id="chart2" name="chart" value="candlestick"/>
-                <label for="chart"> Candlestick</label>
+                <input onClick={(e)=>this.selectChart(e)}  type="radio" id="chart1" name="chart" value="line"/>
+                <label> Line Chart</label>
+                <input onClick={(e)=>this.selectChart(e)}  type="radio" id="chart2" name="chart" value="candlestick"/>
+                <label> Candlestick</label>
             </div>
             <div  ref={this.canvasRef} id="canvas-main">
                 <div id="canvas-child">
