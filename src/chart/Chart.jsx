@@ -74,10 +74,21 @@ class Chart extends Component {
     renderGrid=(canvas)=>{
         const {width,height} = canvas.getBoundingClientRect();
 
-        canvas.width=width;
-        canvas.height= height;
+        let scale = window.devicePixelRatio;
+
+
+        canvas.width=width*scale;
+        canvas.height= height*scale;
+
+
+
 
         const ctx= canvas.getContext('2d')
+
+        ctx.scale(scale,scale)
+
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
 
         drawGrid(this.state.data,{width,height},ctx,canvas,this.state.chartType)
         this.setState({
@@ -95,6 +106,8 @@ class Chart extends Component {
             },
             context:this.contextRef.current,
         }))
+
+
 
         //https://api.jsonbin.io/b/6004dadff98f6e35d5fdca2a
 
@@ -115,6 +128,8 @@ class Chart extends Component {
         this.renderGrid(this.state.context ,this.state.canvasStyle)
         })
     })
+
+
     }
 
     

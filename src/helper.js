@@ -2,6 +2,7 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
     let checkSnap = true;
     let min, max;
     let type = chartType;
+    let diff;
 
 
     // console.log("raw", data);
@@ -11,6 +12,7 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
     if (type === 'line') {
         max = Math.max(...data) + 30;
         min = Math.min(...data) - 30;
+
     }
 
     else if (type === 'candlestick' || 'barchart' || 'heikenashi') {
@@ -20,10 +22,22 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
         min = Math.min(...low) - 30;
     }
 
-    let diff = max - min;
+    //width of the graduations
+    width = width - 80;
+
+    diff = max - min;
+
+
     //horizontal and vertical number of lines
     let vLine = 20;
     let hLine = 10;
+
+
+    let totalH = (diff + 60);
+
+    let diffH = totalH / hLine;
+
+    console.log(totalH);
 
     //grid factor for lines
     let gridX = width / vLine;
@@ -32,13 +46,28 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
     let spaceX = gridX;
     let spaceY = gridY;
 
+
+
     for (let i = 1; i < vLine + 2; i++) {
         drawLine({ x1: gridX, y1: 0, x2: gridX, y2: height }, ctx);
         gridX += spaceX;
+
+        if (gridX > width) break;
     }
+
+    let gradH = max + 30;
+    gradH -= diffH;
     for (let i = 1; i < hLine; i++) {
         drawLine({ x1: 0, y1: gridY, x2: width, y2: gridY }, ctx);
+
+        ctx.beginPath()
+        ctx.font = "12px Arial";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "left";
+        ctx.fillText(`${Math.round(gradH)}`, width + 5, gridY);
+
         gridY += spaceY;
+        gradH -= diffH;
     }
     let result = { max, min, diff, width, height, spaceX, spaceY };
 
@@ -98,30 +127,6 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
             })
         }
 
-        // else if (checkSnap && type === 'candlestick') {
-        //     pointsArray.map((value) => {
-        //         if (Math.round(x) === value.x) {
-        //             console.log(value);
-        //             //S is snap
-        //             let yS = Math.round(value.y1) || Math.round(value.y2) || Math.round(value.y3) || Math.round(value.y4) === Math.round(y)
-
-        //             if (y === yS) {
-
-        //                 console.log("inside", yS, y);
-        //                 restoreSnap(ctx, snapshot)
-        //                 ctx.beginPath();
-        //                 ctx.setLineDash([]);
-        //                 ctx.lineWidth = 1.6;
-        //                 ctx.fillStyle = "#FF0000";
-        //                 ctx.arc(value.x, y, 5, 0, 2 * Math.PI);
-        //                 ctx.fill();
-        //                 ctx.stroke();
-        //             }
-
-        //         }
-        //         return null;
-        //     })
-        // }
     })
 
     snapshot = takeSnap(canvas, ctx, snapshot)
