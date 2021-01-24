@@ -1,8 +1,12 @@
-function drawGrid(data, { width, height }, ctx, canvas, chartType) {
+function drawGrid(data, { width, height }, ctx, canvas, chartType, padY) {
     let checkSnap = true;
     let min, max;
     let type = chartType;
     let diff;
+
+
+
+    let pad = padY ? padY : 0
 
 
     // console.log("raw", data);
@@ -10,16 +14,20 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
     let pointsArray = [];
 
     if (type === 'line') {
-        max = Math.max(...data) + 30;
-        min = Math.min(...data) - 30;
+
+        ctx.clearRect(0, 0, width, height);
+        max = Math.max(...data) + pad;
+        min = Math.min(...data) - pad;
 
     }
 
     else if (type === 'candlestick' || 'barchart' || 'heikenashi') {
+
+        ctx.clearRect(0, 0, width, height);
         let high = data.map(value => value.high);
         let low = data.map(value => value.low);
-        max = Math.max(...high) + 30;
-        min = Math.min(...low) - 30;
+        max = Math.max(...high) + pad;
+        min = Math.min(...low) - pad;
     }
 
     //width of the graduations
@@ -37,7 +45,7 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
 
     let diffH = totalH / hLine;
 
-    console.log(totalH);
+    // console.log(totalH);
 
     //grid factor for lines
     let gridX = width / vLine;
@@ -64,7 +72,7 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
         ctx.font = "12px Arial";
         ctx.fillStyle = "white";
         ctx.textAlign = "left";
-        ctx.fillText(`${Math.round(gradH)}`, width + 5, gridY);
+        ctx.fillText(`${gradH.toFixed(2)}`, width + 5, gridY);
 
         gridY += spaceY;
         gradH -= diffH;
@@ -96,11 +104,26 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
 
     //mouse events
 
+    let showHair = true;
+
+    canvas.addEventListener('mousemove', (e) => {
+        // let ctx = canvas.getContext('2d')
+        var { x } = getMousePos(canvas, e);
+
+        //if pointer moves towards the graduation
+        if (x > width) {
+            showHair = false;
+        }
+        else {
+            showHair = true;
+        }
+    })
+
     canvas.addEventListener('mousedown', (e) => {
         let ctx = canvas.getContext('2d')
         var { x, y } = getMousePos(canvas, e);
         restoreSnap(ctx, snapshot)
-        drawCrosshair(ctx, x, y, width, height)
+        drawCrosshair(ctx, x, y, width, height, showHair)
 
     })
 
@@ -108,7 +131,7 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
         let ctx = canvas.getContext('2d')
         var { x, y } = getMousePos(canvas, e);
         restoreSnap(ctx, snapshot)
-        drawCrosshair(ctx, x, y, width, height)
+        drawCrosshair(ctx, x, y, width, height, showHair)
 
         if (checkSnap && type === 'line') {
             pointsArray.map((value) => {
@@ -136,6 +159,7 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType) {
 
 function drawLine({ x1, y1, x2, y2 }, ctx) {
     ctx.beginPath();
+    ctx.setLineDash([]);
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.lineWidth = 2;
@@ -158,6 +182,7 @@ function drawGraphCandle(data, calculated, ctx, pointsArray) {
 
     myData.reverse().map((value) => {
         ctx.beginPath();
+        ctx.setLineDash([]);
         let { high, low, open, close } = value
         ctx.moveTo(pX, 500 - actualP(high))
         ctx.lineTo(pX, 500 - actualP(low))
@@ -174,6 +199,7 @@ function drawGraphCandle(data, calculated, ctx, pointsArray) {
         // for drawing rectangles
 
         ctx.beginPath();
+        ctx.setLineDash([]);
 
         if (close > open) {
             ctx.strokeStyle = "#519C58"
@@ -210,6 +236,7 @@ function drawGraphBar(data, calculated, ctx, pointsArray) {
 
     myData.reverse().map((value) => {
         ctx.beginPath();
+        ctx.setLineDash([]);
         let { high, low, open, close } = value
         ctx.moveTo(pX, 500 - actualP(high))
         ctx.lineTo(pX, 500 - actualP(low))
@@ -224,6 +251,7 @@ function drawGraphBar(data, calculated, ctx, pointsArray) {
         ctx.stroke();
 
         ctx.beginPath()
+        ctx.setLineDash([]);
         //drawing left and right bars
         if (close > open) {
             ctx.strokeStyle = "#519C58"
@@ -287,6 +315,7 @@ function drawGraphHeikenAshi(data, calculated, ctx, pointsArray) {
 
     myData.reverse().map((value) => {
         ctx.beginPath();
+        ctx.setLineDash([]);
         let { high, low, open, close } = value
 
         if (firstcandle) {
@@ -320,6 +349,7 @@ function drawGraphHeikenAshi(data, calculated, ctx, pointsArray) {
         // for drawing rectangles
 
         ctx.beginPath();
+        ctx.setLineDash([]);
 
         if (closeH > openH) {
             ctx.strokeStyle = "#519C58"
@@ -365,6 +395,7 @@ function drawGraphLine(data, calculated, ctx, pointsArray) {
     let pX = 0;
 
     ctx.beginPath();
+    ctx.setLineDash([]);
 
     ctx.moveTo(pX, 500 - actualP(startY));
     pX += spaceX;
@@ -383,6 +414,31 @@ function drawGraphLine(data, calculated, ctx, pointsArray) {
         pX += spaceX;
         return null;
     });
+
+}
+
+//storing and retreiving min max
+
+
+
+// for graduation changes
+
+function gradChange(e, padY) {
+
+    if (e.deltaY < 0) {
+
+        console.log("wheeling up")
+        if (padY <= 0) return padY = 0;
+        return padY -= 5;
+
+    }
+
+    else if (e.deltaY > 0) {
+
+        console.log("wheeling down")
+        return padY += 5;
+
+    }
 
 }
 
@@ -414,25 +470,30 @@ function getMousePos(canvas, evt) {
 
 //Crosshair
 
-function drawCrosshair(ctx, x, y, width, height) {
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(width, y);
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, 0);
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, height);
-    ctx.moveTo(x, y);
-    ctx.lineTo(0, y);
-    ctx.strokeStyle = "#FFFFFF"
-    ctx.lineWidth = 0.8;
-    ctx.setLineDash([5]);
-    ctx.stroke();
+function drawCrosshair(ctx, x, y, width, height, showHair) {
+    if (showHair === true) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(width, y);
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, 0);
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, height);
+        ctx.moveTo(x, y);
+        ctx.lineTo(0, y);
+        ctx.strokeStyle = "#FFFFFF"
+        ctx.lineWidth = 0.8;
+        ctx.setLineDash([5]);
+        ctx.stroke();
+    }
+    else return;
+
 
 }
 
 
 module.exports = {
     drawGrid,
-    drawLine
+    drawLine,
+    gradChange
 };

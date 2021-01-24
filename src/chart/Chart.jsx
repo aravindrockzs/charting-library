@@ -4,7 +4,7 @@ import React, { Component } from 'react'
 import './chart.css'
 
 //helper function
-const { drawGrid } = require('../helper')
+const { drawGrid , gradChange } = require('../helper')
 
 
 
@@ -18,6 +18,7 @@ class Chart extends Component {
         },
         context:'',
         data:[],
+        padY:10,
         grid: false,
         chartType:'line'
         
@@ -42,9 +43,8 @@ class Chart extends Component {
             this.setState({
                 data: sample
             },()=>{
-
-            this.renderGrid(this.state.context ,this.state.canvasStyle)
-            })
+                this.renderGrid(this.state.context ,this.state.canvasStyle)
+                })
             })
 
         }
@@ -79,10 +79,6 @@ class Chart extends Component {
 
         canvas.width=width*scale;
         canvas.height= height*scale;
-
-
-
-
         const ctx= canvas.getContext('2d')
 
         ctx.scale(scale,scale)
@@ -94,6 +90,22 @@ class Chart extends Component {
         this.setState({
             grid:true
         })
+    }
+
+    gradResize(e){
+        let canvas = this.state.context
+        let gY = gradChange(e,this.state.padY)
+
+        const {width,height} = canvas.getBoundingClientRect();
+        const ctx= canvas.getContext('2d')
+
+
+        this.setState({
+            padY:gY,
+        },()=>{
+            drawGrid(this.state.data,{width,height},ctx,canvas,this.state.chartType,this.state.padY)
+        })
+        
     }
 
 
@@ -134,6 +146,7 @@ class Chart extends Component {
 
     
     render() {
+
         return (
             <>
             <div  className="chart-type">
@@ -148,7 +161,7 @@ class Chart extends Component {
             </div>
             <div  ref={this.canvasRef} id="canvas-main">
                 <div id="canvas-child">
-                    <canvas ref={this.contextRef} style={this.state.canvasStyle}> </canvas>
+                    <canvas onWheel={(e)=>this.gradResize(e)} ref={this.contextRef} style={this.state.canvasStyle}> </canvas>
                 </div>
             </div>
             </>
