@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 
 // css
 import './chart.css'
@@ -10,7 +10,7 @@ const { drawGrid , gradChange } = require('../helper')
 
 
 
-class Chart extends Component {
+class Chart extends React.Component {
     state={
         canvasStyle:{
             width:'',
@@ -86,7 +86,7 @@ class Chart extends Component {
         canvas.style.width = width + 'px';
         canvas.style.height = height + 'px';
 
-        drawGrid(this.state.data,{width,height},ctx,canvas,this.state.chartType)
+        drawGrid(this.state.data,{width,height},ctx,canvas,this.state.chartType,this.state.padY)
         this.setState({
             grid:true
         })
@@ -95,6 +95,9 @@ class Chart extends Component {
     gradResize(e){
         let canvas = this.state.context
         let gY = gradChange(e,this.state.padY)
+
+
+        console.log(gY);
 
         const {width,height} = canvas.getBoundingClientRect();
         const ctx= canvas.getContext('2d')
@@ -161,7 +164,7 @@ class Chart extends Component {
             </div>
             <div  ref={this.canvasRef} id="canvas-main">
                 <div id="canvas-child">
-                    <canvas onWheel={(e)=>this.gradResize(e)} ref={this.contextRef} style={this.state.canvasStyle}> </canvas>
+                    <canvas onWheel ={(e)=>this.gradResize(e)}ref={this.contextRef} style={this.state.canvasStyle}> </canvas>
                 </div>
             </div>
             </>

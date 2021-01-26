@@ -5,8 +5,9 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType, padY) {
     let diff;
 
 
+    let pad = padY ? padY : 0;
 
-    let pad = padY ? padY : 0
+    console.log('starting pad', pad);
 
 
     // console.log("raw", data);
@@ -30,10 +31,16 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType, padY) {
         min = Math.min(...low) - pad;
     }
 
+    console.log("min/max", min, max);
+
     //width of the graduations
     width = width - 80;
 
     diff = max - min;
+
+    // let actualP = (point) => {
+    //     return ((point - min) / diff) * height;
+    // };
 
 
     //horizontal and vertical number of lines
@@ -41,11 +48,11 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType, padY) {
     let hLine = 10;
 
 
-    let totalH = (diff + 60);
+    let totalH = (diff + 2 * pad);
 
     let diffH = totalH / hLine;
 
-    // console.log(totalH);
+    console.log("totalH", totalH);
 
     //grid factor for lines
     let gridX = width / vLine;
@@ -63,7 +70,7 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType, padY) {
         if (gridX > width) break;
     }
 
-    let gradH = max + 30;
+    let gradH = max + pad;
     gradH -= diffH;
     for (let i = 1; i < hLine; i++) {
         drawLine({ x1: 0, y1: gridY, x2: width, y2: gridY }, ctx);
@@ -101,6 +108,9 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType, padY) {
 
 
     let snapshot;
+
+
+    snapshot = takeSnap(canvas, ctx, snapshot)
 
     //mouse events
 
@@ -152,7 +162,8 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType, padY) {
 
     })
 
-    snapshot = takeSnap(canvas, ctx, snapshot)
+
+
 }
 
 
@@ -167,6 +178,53 @@ function drawLine({ x1, y1, x2, y2 }, ctx) {
     ctx.stroke();
 
 }
+
+
+//for line chart
+
+function drawGraphLine(data, calculated, ctx, pointsArray) {
+    const { max, min, diff, width, height, spaceX, spaceY } = calculated;
+    console.log(max, min, diff, width, height, spaceX, spaceY);
+
+    //gives the canvas point
+    let actualP = (point) => {
+        return ((point - min) / diff) * height;
+    };
+
+    let length = data.length;
+    let startY = data[length - 1];
+
+
+
+    let pX = 0;
+
+    ctx.beginPath();
+    ctx.setLineDash([]);
+
+    ctx.moveTo(pX, 500 - actualP(startY));
+    pX += spaceX;
+
+    let myData = [...data];
+
+    console.log(myData);
+
+    console.log(myData.splice(length - 1, 1));
+
+    myData.reverse().map((value) => {
+        ctx.lineTo(pX, 500 - actualP(value));
+
+        console.log(pX, value)
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 2;
+        pointsArray.push({ x: pX, y: 500 - actualP(value) })
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.stroke();
+        pX += spaceX;
+        return null;
+    });
+
+}
+
 
 // for candlestick chart
 function drawGraphCandle(data, calculated, ctx, pointsArray) {
@@ -376,48 +434,8 @@ function drawGraphHeikenAshi(data, calculated, ctx, pointsArray) {
 
 }
 
-//for line chart
-
-function drawGraphLine(data, calculated, ctx, pointsArray) {
-    const { max, min, diff, width, height, spaceX, spaceY } = calculated;
-    console.log(max, min, diff, width, height, spaceX, spaceY);
-
-    //gives the canvas point
-    let actualP = (point) => {
-        return ((point - min) / diff) * height;
-    };
-
-    let length = data.length;
-    let startY = data[length - 1];
-
-
-
-    let pX = 0;
-
-    ctx.beginPath();
-    ctx.setLineDash([]);
-
-    ctx.moveTo(pX, 500 - actualP(startY));
-    pX += spaceX;
-
-    let myData = [...data];
-
-    console.log(myData.splice(length - 1, 1));
-
-    myData.reverse().map((value) => {
-        ctx.lineTo(pX, 500 - actualP(value));
-        ctx.lineCap = 'round';
-        ctx.lineWidth = 2;
-        pointsArray.push({ x: pX, y: 500 - actualP(value) })
-        ctx.strokeStyle = "#FFFFFF";
-        ctx.stroke();
-        pX += spaceX;
-        return null;
-    });
-
-}
-
 //storing and retreiving min max
+
 
 
 
@@ -428,17 +446,22 @@ function gradChange(e, padY) {
     if (e.deltaY < 0) {
 
         console.log("wheeling up")
+
         if (padY <= 0) return padY = 0;
-        return padY -= 5;
+
+        else return padY -= 5;
 
     }
 
     else if (e.deltaY > 0) {
 
         console.log("wheeling down")
+
         return padY += 5;
 
     }
+
+
 
 }
 
