@@ -110,7 +110,7 @@ function drawGrid(data, { width, height }, ctx, canvas, chartType, padY) {
     let snapshot;
 
 
-    snapshot = takeSnap(canvas, ctx, snapshot)
+    snapshot = takeSnap(canvas, ctx)
 
     //mouse events
 
@@ -470,9 +470,9 @@ function gradChange(e, padY) {
 
 //snapshots
 
-function takeSnap(canvas, ctx, snapshot) {
+function takeSnap(canvas, ctx) {
 
-    return snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    return ctx.getImageData(0, 0, canvas.width, canvas.height)
 }
 
 function restoreSnap(ctx, snapshot) {

@@ -121,9 +121,6 @@ class Chart extends React.Component {
             },
             context:this.contextRef.current,
         }))
-
-
-
         //https://api.jsonbin.io/b/6004dadff98f6e35d5fdca2a
 
         //http://api.marketstack.com/v1/eod?access_key=62378be415be5b8e1410d7534fef6593&symbols=AAPL
