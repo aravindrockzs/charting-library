@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
-import Chart from './chart/Chart'
+import Chart from './chart/chart.component'
 
 
 

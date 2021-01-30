@@ -199,28 +199,25 @@ function drawGraphLine(data, calculated, ctx, pointsArray) {
     let pX = 0;
 
     ctx.beginPath();
+    ctx.lineWidth = 2;
+    // ctx.shadowBlur = 2;
+    // ctx.shadowColor = 'rgb(255, 255, 255)';
+    ctx.lineCap = 'square';
+    ctx.lineJoin = 'round';
     ctx.setLineDash([]);
-
     ctx.moveTo(pX, 500 - actualP(startY));
     pX += spaceX;
 
     let myData = [...data];
 
-    console.log(myData);
-
     console.log(myData.splice(length - 1, 1));
-
+    // eslint-disable-next-line
     myData.reverse().map((value) => {
         ctx.lineTo(pX, 500 - actualP(value));
-
-        console.log(pX, value)
-        ctx.lineCap = 'round';
-        ctx.lineWidth = 2;
         pointsArray.push({ x: pX, y: 500 - actualP(value) })
-        ctx.strokeStyle = "#FFFFFF";
+        ctx.strokeStyle = 'rgba(255, 255, 255, 1)'
         ctx.stroke();
         pX += spaceX;
-        return null;
     });
 
 }

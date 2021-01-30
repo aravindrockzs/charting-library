@@ -11,19 +11,24 @@ const { drawGrid , gradChange } = require('../helper')
 
 
 class Chart extends React.Component {
-    state={
-        canvasStyle:{
-            width:'',
-            height:''
-        },
-        context:'',
-        data:[],
-        padY:10,
-        grid: false,
-        chartType:'line'
-        
-    }
 
+    constructor(){
+        super()
+
+        this.state={
+            canvasStyle:{
+                width:'',
+                height:''
+            },
+            context:'',
+            data:[],
+            padY:10,
+            grid: false,
+            chartType:'line'
+        }
+
+
+    }
     canvasRef = React.createRef()
     contextRef = React.createRef()
 
@@ -146,10 +151,9 @@ class Chart extends React.Component {
 
     
     render() {
-
         return (
             <>
-            <div  className="chart-type">
+            <div className="chart-type">
                 <input onClick={(e)=>this.selectChart(e)}  type="radio" id="chart1" name="chart" value="line"/>
                 <label> Line Chart</label>
                 <input onClick={(e)=>this.selectChart(e)}  type="radio" id="chart2" name="chart" value="candlestick"/>
